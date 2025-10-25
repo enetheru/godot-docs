@@ -7,3 +7,4 @@ Build system
 
    scons
    cmake
+   cmake_new_project
