@@ -23,7 +23,7 @@ Below is what you might find in any beginners tutorial, or starting template:
     project( MyExtensionProject
         # VERSION <major>[.<minor>[.<patch>[.<tweak>]]]
         DESCRIPTION "This is an example cmake project"
-        HOMEPAGE_URL "http://www.godotengine.org"
+        HOMEPAGE_URL "http://www.my-awesome-extension.org"
         LANGUAGES CXX)
 
     add_library( my_library SHARED )
@@ -33,43 +33,29 @@ Below is what you might find in any beginners tutorial, or starting template:
             library.cpp
     )
 
+Incorporating the godot-cpp library
+-----------------------------------
 
-Adding Dependencies
--------------------
+The CMake script needs to know where the godot-cpp library is so it can link the
+extension target to it.
 
-Read the documentation on how to add external dependencies, this section will
-show you how to add godot-cpp as a dependency.
+godot-cpp is unlikely to be found in your system libraries, or be available to
+install by your package manager because it's not intended to exist as a
+pre-compiled thing. For finding such libraries look to the CMake documentation
+on finding dependencies_.
 
-.. _cmake_dependencies: https://cmake.org/cmake/help/latest/guide/tutorial/Finding%20Dependencies.html
+.. _dependencies: https://cmake.org/cmake/help/latest/guide/tutorial/Finding%20Dependencies.html
 
-.. code-block:: cmake
+Instead it is intended to have the godot-cpp source code available to
+incorporate into your build system, customised to your specific needs,
+compiled, and linked to your project.
 
-    # Python
-    find_package(Python3 3.4 REQUIRED) # pathlib should be present
+The :ref:`SCons document <doc_godot_cpp_build_system>` provide the example
+of using a git submodule approach. We can do the same here, and also take
+advantage of some of CMake's features.
 
-Adding the godot-cpp Library
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-setting the configuration of the godot-cpp library happens before including it
-as a sub project
-
-.. code-block:: cmake
-
-    set( GODOTCPP_BUILD_PROFILE "${CMAKE_SOURCE_DIR}/build_profile.json" )
-
-Because this is C++ There are innumerable ways to consume an externally
-developed library, in the SCons example we are recommended to add godot-cpp as
-a git submodule. Here is a list of alternatives:
-
-- git submodules
-- Use CMake's FetchContent features
-- Use CMake's External Project features
-
-It is not recommended is to use a pre-built library from a package manager,
-because the godot-cpp extension library is highly targeted to the specific
-godot binary that will be shipped as your game, there is no expectation of
-broad compatibility between different binaries though a great deal of thought
-and effort is spent to achieve as good as possible.
+Finding the godot-cpp Library
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 .. tabs::
 
@@ -107,16 +93,14 @@ and effort is spent to achieve as good as possible.
         Better CMake Part 10 -- When to use FetchContent
         https://youtu.be/GIGHalVqSBE
 
+        Official Documentation for FetchContent.
+        https://cmake.org/cmake/help/latest/module/FetchContent.html
+
         .. code-block:: cmake
 
             include( FetchContent )
-
-            # Godot-cpp
-            set( GODOTCPP_GIT_URL "http://github.com/godotengine/godot-cpp.git" CACHE STRING "The git url of godot-cpp to fetch" )
-            set( GODOTCPP_GIT_BRANCH "master" CACHE STRING "The git branch of godot-cpp to fetch" )
             FetchContent_Declare( godot-cpp
-                    GIT_REPOSITORY ${GODOTCPP_GIT_URL}
-                    GIT_TAG ${GODOTCPP_GIT_BRANCH}
+                    GIT_REPOSITORY http://github.com/godotengine/godot-cpp.git
                     GIT_TAG godot-4.5-stable
                     GIT_PROGRESS ON
             )
@@ -130,6 +114,24 @@ and effort is spent to achieve as good as possible.
 .. code-block:: cmake
 
     # This is a cmake comment.
+
+Configuring the godot-cpp Library
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Setting the configuration of the godot-cpp library happens before including it
+into the project. I know the order I am explaining things might seem a little
+backwards, but bear with me.
+
+You can check what options added libraries expose by looking at the CMake cache
+
+The one's were most interested in are :code:`GODOTCPP_BUILD_PROFILE`,
+:code:`GODOTCPP_TARGET`
+
+
+
+.. code-block:: cmake
+
+    set( GODOTCPP_BUILD_PROFILE "${CMAKE_SOURCE_DIR}/build_profile.json" )
 
 Adding Documentation
 ~~~~~~~~~~~~~~~~~~~~
